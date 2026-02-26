@@ -11,6 +11,11 @@ class Ocorrencia extends Model
         return $this->belongsTo(Aluno::class);
     }
 
+    public function tipo()
+    {
+        return $this->belongsTo(TipoOcorrencia::class, 'tipo_ocorrencia_id');
+    }
+
     public function professor()
     {
         return $this->belongsTo(User::class, 'user_id');
