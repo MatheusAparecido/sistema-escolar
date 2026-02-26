@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('alunos', function (Blueprint $table) {
             $table->id();
-            $table->string('ra')->unique();
             $table->string('nome');
+            $table->string('ra')->unique();
+            $table->date('data_nascimento')->nullable();
+            $table->string('email_microsoft')->nullable();
+            $table->string('email_google')->nullable();
             $table->foreignId('sala_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
         });
     }
 

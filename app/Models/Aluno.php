@@ -19,6 +19,11 @@ class Aluno extends Model
     protected $fillable = [
         'ra',
         'nome',
+        'data_nascimento',
+        'email_microsoft',
+        'email_google',
         'sala_id'
     ];
+
+    public $timestamps = false;
 }

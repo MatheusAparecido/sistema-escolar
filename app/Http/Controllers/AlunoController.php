@@ -17,43 +17,55 @@ class AlunoController extends Controller
 
     public function importar(Request $request)
     {
-        $request->validate([
-            'arquivo' => 'required|file|mimes:csv,txt'
-        ]);
+        if (!$request->hasFile('file')) {
+            return back()->with('error', 'Nenhum arquivo enviado.');
+        }
 
-        $path = $request->file('arquivo')->getRealPath();
+        $file = $request->file('file');
 
-        $file = fopen($path, 'r');
+        if (!$file->isValid()) {
+            return back()->with('error', 'Arquivo inválido.');
+        }
 
-        // Pular cabeçalho
-        fgetcsv($file);
+        $linhas = array_map(function ($linha) {
+            return str_getcsv($linha, ';');
+        }, file($file->getRealPath()));
+        unset($linhas[0]);
 
-        while (($row = fgetcsv($file, 1000, ',')) !== FALSE) {
+        foreach ($linhas as $linha) {
 
-            $nome = $row[0];
-            $ra = $row[1];
-            $salaNome = $row[2];
+            if (count($linha) < 8) continue;
 
-            // Criar ou buscar sala
-            $sala = Sala::where('nome', $salaNome)->first();
+            $nome = trim($linha[1]);
+            $ra = trim($linha[2]) . trim($linha[3]);
+            $dataNascimento = $linha[4];
+            $emailMicrosoft = trim($linha[5]);
+            $emailGoogle = trim($linha[6]);
+            $nomeSala = trim($linha[7]);
 
-            if (!$sala) {
-                continue; // pula se não encontrar
+            try {
+                $dataNascimento = \Carbon\Carbon::parse($dataNascimento)->format('Y-m-d');
+            } catch (\Exception $e) {
+                $dataNascimento = null;
             }
 
-            // Atualizar ou criar aluno pelo RA
-            Aluno::updateOrCreate(
+            $sala = \App\Models\Sala::firstOrCreate([
+                'nome' => $nomeSala
+            ]);
+
+            \App\Models\Aluno::updateOrCreate(
                 ['ra' => $ra],
                 [
                     'nome' => $nome,
-                    'sala_id' => $sala->id
+                    'data_nascimento' => $dataNascimento,
+                    'email_microsoft' => $emailMicrosoft,
+                    'email_google' => $emailGoogle,
+                    'sala_id' => $sala->id,
                 ]
             );
         }
 
-        fclose($file);
-
-        return redirect()->route('salas.index')->with('success', 'Importação concluída!');
+        return back()->with('success', 'Importação realizada com sucesso!');
     }
 
     public function porSala($id)
