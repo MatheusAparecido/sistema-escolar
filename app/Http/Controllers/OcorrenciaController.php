@@ -7,8 +7,7 @@ use App\Models\Ocorrencia;
 use App\Models\Aluno;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
-
-
+use Illuminate\Support\Facades\Storage;
 
 class OcorrenciaController extends Controller
 {
@@ -34,22 +33,48 @@ class OcorrenciaController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('ocorrencias', 'public');
+        } else {
+            $path = null;
+        }
         Ocorrencia::create([
             'aluno_id' => $request->aluno_id,
-            'user_id' => auth()->id(),
             'descricao' => $request->descricao,
+            'professor_nome' => $request->professor_nome,
             'data' => $request->data,
-            'professor_nome' => $request->professor_nome
+            'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
+            'codigo_conviva' => $request->codigo_conviva,
+            'foto' => $path,
+            'user_id' => auth()->id()
         ]);
 
         return redirect()->back()->with('success', 'Ocorrência cadastrada!');
     }
 
-    public function exportarPDF()
+
+    public function export(Request $request)
     {
-        $ocorrencias = Ocorrencia::with('aluno.sala')->get();
+        $query = Ocorrencia::with('aluno.sala');
+
+        if ($request->sala_id) {
+            $query->whereHas('aluno', function ($q) use ($request) {
+                $q->where('sala_id', $request->sala_id);
+            });
+        }
+
+        $ocorrencias = $query->get();
 
         $pdf = Pdf::loadView('ocorrencias.pdf', compact('ocorrencias'));
+
+        return $pdf->download('ocorrencias.pdf');
+    }
+    private function gerarPdf($ocorrencias)
+    {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('ocorrencias.pdf', compact('ocorrencias'));
 
         return $pdf->download('ocorrencias.pdf');
     }
@@ -57,12 +82,28 @@ class OcorrenciaController extends Controller
     public function update(Request $request, $id)
     {
         $ocorrencia = Ocorrencia::findOrFail($id);
-
-        $ocorrencia->update([
+        $data = [
             'descricao' => $request->descricao,
+            'professor_nome' => $request->professor_nome,
             'data' => $request->data,
-            'professor_nome' => $request->professor_nome
-        ]);
+            'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
+            'codigo_conviva' => $request->codigo_conviva,
+        ];
+        if ($request->remover_foto) {
+            Storage::disk('public')->delete($ocorrencia->foto);
+            $data['foto'] = null;
+        }
+        if ($request->hasFile('foto')) {
+
+
+            if ($ocorrencia->foto) {
+                Storage::disk('public')->delete($ocorrencia->foto);
+            }
+
+            $data['foto'] = $request->file('foto')->store('ocorrencias', 'public');
+        }
+
+        $ocorrencia->update($data);
 
         return back()->with('success', 'Ocorrência atualizada!');
     }
@@ -73,5 +114,29 @@ class OcorrenciaController extends Controller
         $ocorrencia->delete();
 
         return back()->with('success', 'Ocorrência excluída!');
+    }
+
+    public function exportPage()
+    {
+        $ocorrencias = Ocorrencia::with('aluno')->get();
+        return view('ocorrencias.export', compact('ocorrencias'));
+    }
+
+    public function exportTodas()
+    {
+        $ocorrencias = Ocorrencia::with('aluno.sala', 'tipo')->get();
+
+        return $this->gerarPdf($ocorrencias);
+    }
+
+    public function exportSelecionadas(Request $request)
+    {
+        $ids = $request->ocorrencias;
+
+        $ocorrencias = Ocorrencia::with('aluno.sala', 'tipo')
+            ->whereIn('id', $ids)
+            ->get();
+
+        return $this->gerarPdf($ocorrencias);
     }
 }

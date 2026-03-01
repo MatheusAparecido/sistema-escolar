@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tipos_ocorrencias', function (Blueprint $table) {
-            $table->id();
-            $table->string('nome'); // Pedagógica, Comportamental, Outros
-            $table->timestamps();
+        Schema::table('ocorrencias', function (Blueprint $table) {
+            $table->string('codigo_conviva')->nullable();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tipos_ocorrencias');
+        Schema::table('ocorrencias', function (Blueprint $table) {
+            //
+        });
     }
 };

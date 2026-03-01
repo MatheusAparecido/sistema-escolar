@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Aluno;
+use App\Models\Ocorrencia;
 use App\Models\Sala;
+use App\Models\TipoOcorrencia;
 use App\Services\AlunoImportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -77,11 +79,29 @@ class AlunoController extends Controller
         return view('alunos.index', compact('alunos', 'sala'));
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $aluno = Aluno::with('sala', 'ocorrencias')->findOrFail($id);
+        $aluno = Aluno::with('sala')->findOrFail($id);
 
-        return view('alunos.show', compact('aluno'));
+        $tipos = TipoOcorrencia::all();
+
+        $query = Ocorrencia::with('tipo')
+            ->where('aluno_id', $id);
+
+        // 🔍 filtro por tipo
+        if ($request->tipo) {
+            $query->where('tipo_ocorrencia_id', $request->tipo);
+        }
+
+        // 🔍 busca por descrição
+        if ($request->busca) {
+            $query->where('descricao', 'like', '%' . $request->busca . '%');
+        }
+
+        // 📄 paginação
+        $ocorrencias = $query->latest()->paginate(5);
+
+        return view('alunos.show', compact('aluno', 'tipos', 'ocorrencias'));
     }
 
     public function exportarPDF($id)

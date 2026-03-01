@@ -25,7 +25,10 @@ class Ocorrencia extends Model
         'user_id',
         'descricao',
         'data',
-        'professor_nome'
+        'professor_nome',
+        'tipo_ocorrencia_id',
+        'foto',
+        'codigo_conviva',
     ];
     protected $casts = [
         'data_ocorrencia' => 'date',

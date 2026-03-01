@@ -1,43 +1,124 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2>Alunos da Sala: {{ $sala->nome }}</h2>
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-    <a style="
-            display:inline-block;
-            margin-top:10px;
-            padding:8px 12px;
-            background:#007bff;
-            color:white;
-            border-radius:5px;
-            text-decoration:none;
-        "
-        href="{{ route('salas.index') }}">Voltar</a>
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            background: #3b82f6;
+            transition: 0.2s;
+        }
 
-    <hr>
+        .btn:hover {
+            background: #2563eb;
+        }
 
-    <table border="1" width="100%" cellpadding="10">
-        <tr>
-            <th>Nome</th>
-            <th>RA</th>
-            <th>Ações</th>
-        </tr>
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
 
-        @foreach ($alunos as $aluno)
-            <tr>
-                <td>{{ $aluno->nome }}</td>
-                <td>{{ $aluno->ra }}</td>
-                <td>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-                    <!-- BOTÃO OLHO -->
-                    <a href="{{ route('alunos.show', $aluno->id) }}" title="Ver ficha">
-                        👁️
-                    </a>
+        thead {
+            background: #f1f5f9;
+        }
 
-                </td>
-            </tr>
-        @endforeach
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 14px;
+            color: #555;
+        }
 
-    </table>
+        td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .actions a {
+            font-size: 18px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .actions a:hover {
+            transform: scale(1.2);
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+    </style>
+
+    <div class="page-header">
+        <div class="title">👨‍🎓 Alunos - {{ $sala->nome }}</div>
+
+        <a href="{{ route('salas.index') }}" class="btn">
+            ⬅ Voltar
+        </a>
+    </div>
+
+    <div class="card">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>RA</th>
+                    <th style="width: 100px;">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse ($alunos as $aluno)
+                    <tr>
+                        <td>{{ $aluno->nome }}</td>
+                        <td>{{ $aluno->ra }}</td>
+                        <td class="actions">
+
+                            <a href="{{ route('alunos.show', $aluno->id) }}" title="Ver ficha">
+                                👁️
+                            </a>
+
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="empty">
+                            Nenhum aluno encontrado
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+    </div>
 @endsection

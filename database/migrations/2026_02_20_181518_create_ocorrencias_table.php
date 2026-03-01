@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('descricao');
             $table->string('professor_nome')->nullable();
             $table->date('data')->nullable();
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }
