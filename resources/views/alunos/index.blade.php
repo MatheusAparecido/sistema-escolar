@@ -85,7 +85,16 @@
             ⬅ Voltar
         </a>
     </div>
-
+    <div style="margin-bottom:15px;">
+        <input type="text" id="searchAluno" placeholder="🔎 Buscar aluno por nome ou RA..."
+            style="
+            width:100%;
+            padding:10px;
+            border-radius:8px;
+            border:1px solid #ddd;
+            outline:none;
+        ">
+    </div>
     <div class="card">
 
         <table>
@@ -121,4 +130,21 @@
         </table>
 
     </div>
+    <script>
+        document.getElementById('searchAluno').addEventListener('keyup', function() {
+            let filtro = this.value.toLowerCase();
+            let linhas = document.querySelectorAll('tbody tr');
+
+            linhas.forEach(function(linha) {
+                let nome = linha.children[0].innerText.toLowerCase();
+                let ra = linha.children[1].innerText.toLowerCase();
+
+                if (nome.includes(filtro) || ra.includes(filtro)) {
+                    linha.style.display = '';
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+        });
+    </script>
 @endsection
