@@ -57,8 +57,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/ocorrencias/exportar', [OcorrenciaController::class, 'exportPage'])->name('ocorrencias.export.page');
+    Route::get('/ocorrencias/exportar/{aluno_id}', [OcorrenciaController::class, 'exportPage'])->name('ocorrencias.export.page');
     Route::post('/ocorrencias/exportar', [OcorrenciaController::class, 'export'])->name('ocorrencias.export');
-    Route::post('/ocorrencias/export/todas', [OcorrenciaController::class, 'exportTodas'])->name('ocorrencias.export.todas');
+    Route::post('/ocorrencias/export/todas/{aluno}', [OcorrenciaController::class, 'exportTodas'])
+        ->name('ocorrencias.export.todas');
     Route::post('/ocorrencias/export/selecionadas', [OcorrenciaController::class, 'exportSelecionadas'])->name('ocorrencias.export.selecionadas');
 });

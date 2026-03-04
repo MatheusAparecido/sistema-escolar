@@ -39,7 +39,9 @@ class AlunoController extends Controller
             if (count($linha) < 8) continue;
 
             $nome = trim($linha[1]);
-            $ra = trim($linha[2]) . trim($linha[3]);
+
+            $ra = preg_replace('/\s+/', '', trim($linha[2] . $linha[3]));
+
             $dataNascimento = $linha[4];
             $emailMicrosoft = trim($linha[5]);
             $emailGoogle = trim($linha[6]);
@@ -51,11 +53,11 @@ class AlunoController extends Controller
                 $dataNascimento = null;
             }
 
-            $sala = \App\Models\Sala::firstOrCreate([
+            $sala = Sala::firstOrCreate([
                 'nome' => $nomeSala
             ]);
 
-            \App\Models\Aluno::updateOrCreate(
+            Aluno::updateOrCreate(
                 ['ra' => $ra],
                 [
                     'nome' => $nome,

@@ -33,14 +33,6 @@ class OcorrenciaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
-        if ($request->hasFile('foto')) {
-            $path = $request->file('foto')->store('ocorrencias', 'public');
-        } else {
-            $path = null;
-        }
         Ocorrencia::create([
             'aluno_id' => $request->aluno_id,
             'descricao' => $request->descricao,
@@ -48,7 +40,7 @@ class OcorrenciaController extends Controller
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,
-            'foto' => $path,
+            'foto' => $request->foto,
             'user_id' => auth()->id()
         ]);
 
@@ -88,20 +80,8 @@ class OcorrenciaController extends Controller
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,
+            'foto' => $request->foto
         ];
-        if ($request->remover_foto) {
-            Storage::disk('public')->delete($ocorrencia->foto);
-            $data['foto'] = null;
-        }
-        if ($request->hasFile('foto')) {
-
-
-            if ($ocorrencia->foto) {
-                Storage::disk('public')->delete($ocorrencia->foto);
-            }
-
-            $data['foto'] = $request->file('foto')->store('ocorrencias', 'public');
-        }
 
         $ocorrencia->update($data);
 
@@ -116,15 +96,22 @@ class OcorrenciaController extends Controller
         return back()->with('success', 'Ocorrência excluída!');
     }
 
-    public function exportPage()
+    public function exportPage($alunoId)
     {
-        $ocorrencias = Ocorrencia::with('aluno')->get();
-        return view('ocorrencias.export', compact('ocorrencias'));
+        $aluno = Aluno::findOrFail($alunoId);
+
+        $ocorrencias = Ocorrencia::where('aluno_id', $alunoId)
+            ->with('tipo')
+            ->get();
+
+        return view('ocorrencias.export', compact('aluno', 'ocorrencias'));
     }
 
-    public function exportTodas()
+    public function exportTodas($alunoId)
     {
-        $ocorrencias = Ocorrencia::with('aluno.sala', 'tipo')->get();
+        $ocorrencias = Ocorrencia::where('aluno_id', $alunoId)
+            ->with('tipo', 'aluno')
+            ->get();
 
         return $this->gerarPdf($ocorrencias);
     }
@@ -138,5 +125,15 @@ class OcorrenciaController extends Controller
             ->get();
 
         return $this->gerarPdf($ocorrencias);
+    }
+    function driveToView($link)
+    {
+        if (!$link) return null;
+
+        preg_match('/\/d\/(.*?)\//', $link, $matches);
+
+        return isset($matches[1])
+            ? 'https://drive.google.com/uc?export=view&id=' . $matches[1]
+            : $link;
     }
 }

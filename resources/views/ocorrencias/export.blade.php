@@ -21,7 +21,7 @@
             <div class="card-body d-flex gap-2">
 
                 {{-- 🔹 EXPORTAR TODAS --}}
-                <form method="POST" action="{{ route('ocorrencias.export.todas') }}">
+                <form method="POST" action="{{ route('ocorrencias.export.todas', $aluno->id) }}">
                     @csrf
                     <button class="btn btn-success">
                         📥 Exportar Todas

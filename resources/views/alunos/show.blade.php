@@ -60,8 +60,9 @@
 
                     <div class="mb-2">
                         <label>Foto</label>
-                        <input type="file" name="foto" class="form-control" onchange="previewImagem(event)">
-                        <img id="preview" width="120" class="mt-2" />
+                        <input type="url" name="foto" placeholder="Cole o link do Google Drive"
+                            value="{{ $ocorrencia->foto ?? '' }}"
+                            style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc;">
                     </div>
 
                     @if (auth()->user()->is_admin == 1)
@@ -169,12 +170,9 @@
 
                             <textarea name="descricao" id="edit_descricao" class="form-control mb-2"></textarea>
 
-                            {{-- 🔧 ALTERADO: imagem agora será preenchida via JS --}}
                             <label>Nova Foto</label>
-                            <input type="file" name="foto" class="form-control"
-                                onchange="previewEditImagem(event)">
-                            <br>
-                            <img id="edit_preview" width="120" class="mt-2 rounded d-none">
+                            <input type="url" name="foto" placeholder="Cole o link do Google Drive"
+                                class="form-control mb-2" id="edit_foto">
 
                             @if (auth()->user()->is_admin == 1)
                                 <label>Codigo Conviva</label>
@@ -211,6 +209,7 @@
             document.getElementById('edit_professor').value = oc.professor_nome;
             document.getElementById('edit_data').value = oc.data;
             document.getElementById('edit_descricao').value = oc.descricao;
+            document.getElementById('edit_foto').value = oc.foto ?? '';
 
             // 🔧 ALTERADO: evita erro se não for admin
             let codigo = document.getElementById('edit_codigo');
@@ -227,16 +226,6 @@
             @endforeach
 
             select.value = oc.tipo_ocorrencia_id;
-
-            // 🔧 ALTERADO: preview da imagem no modal
-            let img = document.getElementById('edit_preview');
-
-            if (oc.foto) {
-                img.src = "/storage/" + oc.foto;
-                img.classList.remove('d-none');
-            } else {
-                img.classList.add('d-none');
-            }
 
             new bootstrap.Modal(document.getElementById('modalEdit')).show();
         }

@@ -129,7 +129,7 @@
             @endif
 
             @if ($o->foto)
-                <img src="{{ public_path('storage/' . $o->foto) }}">
+                <img src="{{ driveToView($o->foto) }}">
             @endif
 
         </div>
