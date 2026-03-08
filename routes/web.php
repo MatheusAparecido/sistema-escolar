@@ -7,6 +7,7 @@ use App\Http\Controllers\AlunoController;
 use App\Http\Controllers\SalaController;
 use App\Http\Controllers\AlunoImportController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ChamadaController;
 
 Route::get('/', function () {
     return redirect('/salas');
@@ -63,3 +64,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('ocorrencias.export.todas');
     Route::post('/ocorrencias/export/selecionadas', [OcorrenciaController::class, 'exportSelecionadas'])->name('ocorrencias.export.selecionadas');
 });
+
+Route::post('/api/chamada', [ChamadaController::class, 'registrar']);
+Route::get('/api/relatorio/{sala}/{mes}', [ChamadaController::class, 'mensal']);
