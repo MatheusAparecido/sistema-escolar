@@ -44,8 +44,23 @@
                     </div>
 
                     <div class="mb-2">
-                        <label>Professor</label>
-                        <input type="text" name="professor_nome" class="form-control" required>
+                        <label>Professor:</label>
+
+                        <select name="professor_id" style="width:100%; padding:10px;">
+                            <option value="">-- Selecione um professor --</option>
+
+                            @foreach ($professores as $prof)
+                                <option value="{{ $prof->id }}">
+                                    {{ $prof->nome }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <br><br>
+
+                        <label>Ou cadastrar novo professor:</label>
+
+                        <input type="text" name="novo_professor" placeholder="Digite o nome">
                     </div>
 
                     <div class="mb-2">
@@ -164,22 +179,39 @@
 
                             <select name="tipo_ocorrencia_id" id="edit_tipo" class="form-control mb-2"></select>
 
-                            <input type="text" name="professor_nome" id="edit_professor" class="form-control mb-2">
+                            <label>Professor:</label>
+
+                            <!-- 🔥 AGORA TEM ID -->
+                            <select name="professor_id" id="edit_professor" class="form-control mb-2">
+                                <option value="">-- Selecione um professor --</option>
+
+                                @foreach ($professores as $prof)
+                                    <option value="{{ $prof->id }}">
+                                        {{ $prof->nome }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <label>Ou cadastrar novo professor:</label>
+                            <input type="text" name="novo_professor" id="edit_novo_professor"
+                                class="form-control mb-2">
 
                             <input type="date" name="data" id="edit_data" class="form-control mb-2">
 
                             <textarea name="descricao" id="edit_descricao" class="form-control mb-2"></textarea>
 
                             <label>Nova Foto</label>
-                            <input type="url" name="foto" placeholder="Cole o link do Google Drive"
-                                class="form-control mb-2" id="edit_foto">
+                            <input type="url" name="foto" id="edit_foto" class="form-control mb-2">
 
                             @if (auth()->user()->is_admin == 1)
                                 <label>Codigo Conviva</label>
                                 <input type="text" name="codigo_conviva" id="edit_codigo" class="form-control mb-2">
                             @endif
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removerFoto()">Remover
-                                Foto</button>
+
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removerFoto()">
+                                Remover Foto
+                            </button>
+
                         </div>
 
                         <div class="modal-footer">
@@ -202,22 +234,26 @@
 
             let oc = JSON.parse(btn.getAttribute('data-oc'));
 
-            console.log("Modal chamado", oc); // 🔧 DEBUG (pode remover depois)
-
             document.getElementById('formEdit').action = "/ocorrencias/" + oc.id;
 
-            document.getElementById('edit_professor').value = oc.professor_nome;
+            // 🔥 professor (agora correto)
+            let selectProf = document.getElementById('edit_professor');
+            if (selectProf) {
+                selectProf.value = oc.professor_id ?? '';
+            }
+
+            // limpa campo novo professor
+            document.getElementById('edit_novo_professor').value = '';
+
             document.getElementById('edit_data').value = oc.data;
             document.getElementById('edit_descricao').value = oc.descricao;
             document.getElementById('edit_foto').value = oc.foto ?? '';
 
-            // 🔧 ALTERADO: evita erro se não for admin
             let codigo = document.getElementById('edit_codigo');
             if (codigo) {
                 codigo.value = oc.codigo_conviva ?? '';
             }
 
-            // 🔧 ALTERADO: select recriado corretamente
             let select = document.getElementById('edit_tipo');
             select.innerHTML = '';
 

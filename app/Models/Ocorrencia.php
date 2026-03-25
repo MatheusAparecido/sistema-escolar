@@ -18,7 +18,7 @@ class Ocorrencia extends Model
 
     public function professor()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Professores::class);
     }
     protected $fillable = [
         'aluno_id',

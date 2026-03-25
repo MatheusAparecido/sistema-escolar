@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Ocorrencia;
 use App\Models\Aluno;
+use App\Models\Professor;
+use App\Models\Professores;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
@@ -33,10 +35,17 @@ class OcorrenciaController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->novo_professor) {
+            $professor = Professores::firstOrCreate([
+                'nome' => $request->novo_professor
+            ]);
+        } else {
+            $professor = Professores::find($request->professor_id);
+        }
         Ocorrencia::create([
             'aluno_id' => $request->aluno_id,
             'descricao' => $request->descricao,
-            'professor_nome' => $request->professor_nome,
+            'professor_id' => $professor->id,
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,
@@ -76,7 +85,7 @@ class OcorrenciaController extends Controller
         $ocorrencia = Ocorrencia::findOrFail($id);
         $data = [
             'descricao' => $request->descricao,
-            'professor_nome' => $request->professor_nome,
+            'professor' => $request->professor,
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,

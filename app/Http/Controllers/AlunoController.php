@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Aluno;
 use App\Models\Ocorrencia;
+use App\Models\Professor;
+use App\Models\Professores;
 use App\Models\Sala;
 use App\Models\TipoOcorrencia;
 use App\Services\AlunoImportService;
@@ -14,7 +16,8 @@ class AlunoController extends Controller
 {
     public function form()
     {
-        return view('alunos.import');
+        $salas = Sala::all();
+        return view('alunos.import', compact('salas'));
     }
 
     public function importar(Request $request)
@@ -29,19 +32,20 @@ class AlunoController extends Controller
             return back()->with('error', 'Arquivo inválido.');
         }
 
+        $salaSelecionada = $request->sala_id; // 👈 nova linha
+
         $linhas = array_map(function ($linha) {
             return str_getcsv($linha, ';');
         }, file($file->getRealPath()));
-        unset($linhas[0]);
+
+        unset($linhas[0]); // remove cabeçalho
 
         foreach ($linhas as $linha) {
 
             if (count($linha) < 8) continue;
 
             $nome = trim($linha[1]);
-
             $ra = preg_replace('/\s+/', '', trim($linha[2] . $linha[3]));
-
             $dataNascimento = $linha[4];
             $emailMicrosoft = trim($linha[5]);
             $emailGoogle = trim($linha[6]);
@@ -53,9 +57,16 @@ class AlunoController extends Controller
                 $dataNascimento = null;
             }
 
-            $sala = Sala::firstOrCreate([
-                'nome' => $nomeSala
-            ]);
+            // 🔥 NOVA LÓGICA AQUI
+            if ($salaSelecionada) {
+                $sala = Sala::find($salaSelecionada);
+            } else {
+                $sala = Sala::firstOrCreate([
+                    'nome' => $nomeSala
+                ]);
+            }
+
+            if (!$sala) continue;
 
             Aluno::updateOrCreate(
                 ['ra' => $ra],
@@ -87,6 +98,8 @@ class AlunoController extends Controller
 
         $tipos = TipoOcorrencia::all();
 
+        $professores = Professores::orderBy('nome')->get() ?? collect();
+
         $query = Ocorrencia::with('tipo')
             ->where('aluno_id', $id);
 
@@ -103,7 +116,7 @@ class AlunoController extends Controller
         // 📄 paginação
         $ocorrencias = $query->latest()->paginate(5);
 
-        return view('alunos.show', compact('aluno', 'tipos', 'ocorrencias'));
+        return view('alunos.show', compact('aluno', 'tipos', 'ocorrencias', 'professores'));
     }
 
     public function exportarPDF($id)

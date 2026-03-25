@@ -16,6 +16,18 @@
             @csrf
 
             <label><strong>Selecione o arquivo CSV:</strong></label>
+            <label><strong>Selecione a sala:</strong></label>
+
+            <select name="sala_id" required
+                style="display:block; margin-top:10px; margin-bottom:20px; width:100%; padding:10px;">
+                <option value="">-- Escolha uma sala --</option>
+
+                @foreach ($salas as $sala)
+                    <option value="{{ $sala->id }}">
+                        {{ $sala->nome }}
+                    </option>
+                @endforeach
+            </select>
 
             <input type="file" name="file" required style="display:block; margin-top:10px; margin-bottom:20px;">
 
