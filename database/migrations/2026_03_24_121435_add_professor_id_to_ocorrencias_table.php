@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('professor_id')
                 ->nullable()
                 ->after('aluno_id')
-                ->constrained()
+                ->constrained('professores')
                 ->nullOnDelete();
         });
     }

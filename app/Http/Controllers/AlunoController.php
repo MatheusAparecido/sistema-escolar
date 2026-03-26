@@ -32,24 +32,44 @@ class AlunoController extends Controller
             return back()->with('error', 'Arquivo inválido.');
         }
 
-        $salaSelecionada = $request->sala_id; // 👈 nova linha
+        // 🔥 sala obrigatória (dropdown)
+        $sala = Sala::find($request->sala_id);
+
+        if (!$sala) {
+            return back()->with('error', 'Selecione uma sala válida.');
+        }
+
+        $conteudo = file($file->getRealPath());
+
+        if (!$conteudo) {
+            return back()->with('error', 'Erro ao ler o arquivo.');
+        }
 
         $linhas = array_map(function ($linha) {
             return str_getcsv($linha, ';');
-        }, file($file->getRealPath()));
+        }, $conteudo);
 
-        unset($linhas[0]); // remove cabeçalho
+        unset($linhas[0]); // remove cabeçalho (linha 1)
 
         foreach ($linhas as $linha) {
 
-            if (count($linha) < 8) continue;
+            // 🔥 garante que tem pelo menos até coluna G
+            if (count($linha) < 7) continue;
 
-            $nome = trim($linha[1]);
-            $ra = preg_replace('/\s+/', '', trim($linha[2] . $linha[3]));
-            $dataNascimento = $linha[4];
-            $emailMicrosoft = trim($linha[5]);
-            $emailGoogle = trim($linha[6]);
-            $nomeSala = trim($linha[7]);
+            $nome = trim($linha[1]); // coluna B
+
+            // 🔥 RA continua juntando C + D
+            $ra = preg_replace('/\s+/', '', trim(($linha[2] ?? '') . ($linha[3] ?? '')));
+
+            $dataNascimento = $linha[4] ?? null; // coluna E
+
+            // 🔥 SITUAÇÃO = coluna G
+            $situacao = strtolower(trim($linha[6] ?? ''));
+
+            // 🔥 só importa ATIVOS
+            if ($situacao !== 'ativo') {
+                continue;
+            }
 
             try {
                 $dataNascimento = \Carbon\Carbon::parse($dataNascimento)->format('Y-m-d');
@@ -57,24 +77,12 @@ class AlunoController extends Controller
                 $dataNascimento = null;
             }
 
-            // 🔥 NOVA LÓGICA AQUI
-            if ($salaSelecionada) {
-                $sala = Sala::find($salaSelecionada);
-            } else {
-                $sala = Sala::firstOrCreate([
-                    'nome' => $nomeSala
-                ]);
-            }
-
-            if (!$sala) continue;
-
+            // 🔥 salva ou atualiza pelo RA
             Aluno::updateOrCreate(
                 ['ra' => $ra],
                 [
                     'nome' => $nome,
                     'data_nascimento' => $dataNascimento,
-                    'email_microsoft' => $emailMicrosoft,
-                    'email_google' => $emailGoogle,
                     'sala_id' => $sala->id,
                 ]
             );
