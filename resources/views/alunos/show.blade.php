@@ -69,10 +69,23 @@
                     </div>
 
                     <div class="mb-2">
-                        <label>Descrição</label>
+                        <label>Relato docente</label>
                         <textarea name="descricao" class="form-control" rows="3" required></textarea>
-                    </div>
 
+                        <label>Relato atendimento aluno</label>
+                        <textarea name="relato_aluno" class="form-control"></textarea>
+
+                        <label>Data atendimento aluno</label>
+                        <input type="date" name="data_relato_aluno" class="form-control">
+
+                        <br>
+
+                        <label>Relato atendimento responsável</label>
+                        <textarea name="relato_responsavel" class="form-control"></textarea>
+
+                        <label>Data atendimento responsável</label>
+                        <input type="date" name="data_relato_responsavel" class="form-control">
+                    </div>
                     <div class="mb-2">
                         <label>Foto</label>
                         <input type="url" name="foto" placeholder="Cole o link do Google Drive"
@@ -145,11 +158,44 @@
                             </div>
                         </div>
 
-                        <p class="mt-2 mb-1"><strong>Professor:</strong> {{ $oc->professor_nome }}</p>
+                        <!-- 👨‍🏫 PROFESSOR -->
+                        <p class="mt-2 mb-1">
+                            <strong>Professor:</strong>
+                            {{ $oc->professor->nome ?? 'Não informado' }}
+                        </p>
 
-                        <p class="text-muted">
+                        <!-- 📝 DESCRIÇÃO -->
+                        <p class="text-muted mb-2">
                             {{ Str::limit($oc->descricao, 120) }}
                         </p>
+
+                        <!-- 📌 RELATO ALUNO -->
+                        @if ($oc->relato_aluno)
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <strong>🧑‍🎓 Relato Atendimento Aluno:</strong><br>
+                                {{ $oc->relato_aluno }}
+
+                                @if ($oc->data_relato_aluno)
+                                    <br><small class="text-muted">
+                                        📅 {{ \Carbon\Carbon::parse($oc->data_relato_aluno)->format('d/m/Y') }}
+                                    </small>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- 📌 RELATO RESPONSÁVEL -->
+                        @if ($oc->relato_responsavel)
+                            <div class="mt-2 p-2 bg-light rounded">
+                                <strong>👨‍👩‍👧 Relato Atendimento Responsável:</strong><br>
+                                {{ $oc->relato_responsavel }}
+
+                                @if ($oc->data_relato_responsavel)
+                                    <br><small class="text-muted">
+                                        📅 {{ \Carbon\Carbon::parse($oc->data_relato_responsavel)->format('d/m/Y') }}
+                                    </small>
+                                @endif
+                            </div>
+                        @endif
 
                     </div>
                 @empty
@@ -198,7 +244,22 @@
 
                             <input type="date" name="data" id="edit_data" class="form-control mb-2">
 
+                            <label>Relato docente</label>
                             <textarea name="descricao" id="edit_descricao" class="form-control mb-2"></textarea>
+
+                            <label>Relato aluno</label>
+                            <textarea id="edit_relato_aluno" name="relato_aluno" class="form-control mb-2"></textarea>
+
+                            <label>Data relato aluno</label>
+                            <input type="date" id="edit_data_relato_aluno" name="data_relato_aluno"
+                                class="form-control mb-2">
+
+                            <label>Relato responsável</label>
+                            <textarea id="edit_relato_responsavel" name="relato_responsavel" class="form-control mb-2"></textarea>
+
+                            <label>Data relato responsável</label>
+                            <input type="date" id="edit_data_relato_responsavel" name="data_relato_responsavel"
+                                class="form-control mb-2">
 
                             <label>Nova Foto</label>
                             <input type="url" name="foto" id="edit_foto" class="form-control mb-2">
@@ -245,6 +306,10 @@
             // limpa campo novo professor
             document.getElementById('edit_novo_professor').value = '';
 
+            document.getElementById('edit_relato_aluno').value = oc.relato_aluno ?? '';
+            document.getElementById('edit_data_relato_aluno').value = oc.data_relato_aluno ?? '';
+            document.getElementById('edit_relato_responsavel').value = oc.relato_responsavel ?? '';
+            document.getElementById('edit_data_relato_responsavel').value = oc.data_relato_responsavel ?? '';
             document.getElementById('edit_data').value = oc.data;
             document.getElementById('edit_descricao').value = oc.descricao;
             document.getElementById('edit_foto').value = oc.foto ?? '';

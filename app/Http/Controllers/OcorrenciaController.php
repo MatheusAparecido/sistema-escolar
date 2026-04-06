@@ -35,17 +35,26 @@ class OcorrenciaController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->novo_professor) {
+        $professor = null;
+
+        // 🔥 prioridade: novo professor
+        if (!empty($request->novo_professor)) {
+
             $professor = Professores::firstOrCreate([
-                'nome' => $request->novo_professor
+                'nome' => trim($request->novo_professor)
             ]);
-        } else {
+        } elseif (!empty($request->professor_id)) {
+
             $professor = Professores::find($request->professor_id);
         }
         Ocorrencia::create([
             'aluno_id' => $request->aluno_id,
             'descricao' => $request->descricao,
-            'professor_id' => $professor->id,
+            'relato_aluno' => $request->relato_aluno,
+            'data_relato_aluno' => $request->data_relato_aluno,
+            'relato_responsavel' => $request->relato_responsavel,
+            'data_relato_responsavel' => $request->data_relato_responsavel,
+            'professor_id' => $professor ? $professor->id : null,
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,
@@ -83,9 +92,20 @@ class OcorrenciaController extends Controller
     public function update(Request $request, $id)
     {
         $ocorrencia = Ocorrencia::findOrFail($id);
+        if ($request->novo_professor) {
+            $professor = Professores::firstOrCreate([
+                'nome' => $request->novo_professor
+            ]);
+        } else {
+            $professor = Professores::find($request->professor_id);
+        }
         $data = [
             'descricao' => $request->descricao,
-            'professor' => $request->professor,
+            'relato_aluno' => $request->relato_aluno,
+            'data_relato_aluno' => $request->data_relato_aluno,
+            'relato_responsavel' => $request->relato_responsavel,
+            'data_relato_responsavel' => $request->data_relato_responsavel,
+            'professor_id' => $professor->id,
             'data' => $request->data,
             'tipo_ocorrencia_id' => $request->tipo_ocorrencia_id,
             'codigo_conviva' => $request->codigo_conviva,
